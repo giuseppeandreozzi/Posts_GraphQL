@@ -2,26 +2,39 @@ const buttonSubmit = document.querySelector("input[value=Invia]");
 buttonSubmit.addEventListener("click", function(event) {
     event.preventDefault();
 
-    const formData = new FormData();
-
-    formData.append("title", document.querySelector("input[name=title]").value);
-    formData.append("description", document.querySelector("textarea[name=description]").value);
-    formData.append("image", document.querySelector("input[name=image]").files[0]);
+    const query = `
+        mutation insertPost($title: String!, $description: String!, $date: String!){
+            insertPost(post: {title: $title, description: $description, date: $date}) {
+                title
+                description
+                date
+            }
+        }
+    `
 
     console.log(getCookie("token"))
-    fetch("http://localhost:3030/insertPost", {
+    fetch("http://localhost:3030/graphql", {
         method: "POST",
         headers: {
+            "Content-Type": "application/json",
             "Authorization": "Bearer " + getCookie("token")
         },
-        body: formData
+        body: JSON.stringify({
+            query,
+            variables: {
+                title: document.querySelector("input[name=title]").value,
+                description: document.querySelector("textarea[name=description]").value,
+                date: new Date().toString()
+            }
+        })
     }).then(result => {
-        if(result.status == 500)
+        /*if(result.status == 500)
             throw new Error("Accesso negato, effettuare l'accesso");
-        else
+        else*/
             return result.json()
     }).then(result => {
-        const post = result.post;
+        console.log(result)
+        const post = result.data.insertPost;
         const divPosts = document.querySelector("div#posts");
         const date = new Date(post.date);
 
@@ -67,6 +80,7 @@ function getAllPosts(){
     .then(result => {
         var html = "";
 
+        console.log(result)
         result.data.getPosts.forEach(el => {
             html += "<h5>" + el.title + "</h5>\n<p>" + el.description + " " + el.date + "</p>\n";
         })

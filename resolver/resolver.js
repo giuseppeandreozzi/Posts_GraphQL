@@ -13,5 +13,16 @@ export default {
         }
 
         return arrayPosts;
+    },
+    insertPost: async ({post}, req) => {
+        var newPost = new Post({
+            title: post.title,
+            description: post.description,
+            date: post.date
+        });
+
+        var postSaved = await newPost.save();
+
+        return {title: postSaved.title, description: postSaved.description, date: postSaved.date.toString()};
     }
 };
