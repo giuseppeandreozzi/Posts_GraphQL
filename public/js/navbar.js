@@ -116,23 +116,33 @@ function checkSignForm(){
 const buttonSubmitSign = document.querySelector("form[name=signForm] input[value=Registrati]");
 buttonSubmitSign.addEventListener("click", function(event) {
 	event.preventDefault();
-
-	fetch("http://localhost:3030/signup", {
+	const query = `
+		mutation signUp($username: String!, $password: String!, $email: String!){
+			signUp(user: {username: $username, password: $password, email: $email})
+		}
+	`;
+	fetch("http://localhost:3030/graphql", {
 		method: "POST",
 		headers: {
 			"Content-Type":"application/json"
 		},
 		body: JSON.stringify({
-			username: document.querySelector("form[name=signForm] input[name=username]").value,
-			password: document.querySelector("form[name=signForm] input[name=password]").value,
-			email: document.querySelector("form[name=signForm] input[name=email]").value
+			query,
+			variables: {
+				username: document.querySelector("form[name=signForm] input[name=username]").value,
+				password: document.querySelector("form[name=signForm] input[name=password]").value,
+				email: document.querySelector("form[name=signForm] input[name=email]").value
+			}
 		})
 	}).then(result => result.json()).then(response => {
+		console.log(response)
 		const span = document.querySelector("span#errorSign");
-		span.innerHTML = response.success;
+		span.innerHTML = "Account creato con successo";
 		span.style.display = "inline-block";
 	}).catch(err => {
-		console.log(err);
+		const span = document.querySelector("span#errorSign");
+		span.innerHTML = err;
+		span.style.display = "inline-block";
 	})
 });
 
@@ -140,20 +150,29 @@ const buttonSubmitLog = document.querySelector("form[name=logForm] input[value=E
 buttonSubmitLog.addEventListener("click", function(event) {
 	event.preventDefault();
 
-	fetch("http://localhost:3030/login", {
+	const query = `
+		mutation logIn($username: String!, $password: String!){
+			logIn(user: {username: $username, password: $password})
+		}
+	`;
+
+	fetch("http://localhost:3030/graphql", {
 		method: "POST",
 		headers: {
 			"Content-Type":"application/json"
 		},
 		body: JSON.stringify({
-			username: document.querySelector("form[name=logForm] input[name=username]").value,
-			password: document.querySelector("form[name=logForm] input[name=password]").value,
+			query,
+			variables: {
+				username: document.querySelector("form[name=logForm] input[name=username]").value,
+				password: document.querySelector("form[name=logForm] input[name=password]").value
+			}
 		})
 	}).then(result => result.json()).then(response => {
 		const span = document.querySelector("span#errorLog");
-		span.innerHTML = response.success;
+		span.innerHTML = "Login effettuato con successo. Hai 1 ora di tempo prima che l'autenticazione scada";
 		span.style.display = "inline-block";
-		document.cookie = "token=" + decodeURIComponent(response.token)
+		document.cookie = "token=" + decodeURIComponent(response.data.logIn)
 	}).catch(err => {
 		console.log(err);
 	})

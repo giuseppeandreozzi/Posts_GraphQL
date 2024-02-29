@@ -28,9 +28,6 @@ buttonSubmit.addEventListener("click", function(event) {
             }
         })
     }).then(result => {
-        /*if(result.status == 500)
-            throw new Error("Accesso negato, effettuare l'accesso");
-        else*/
             return result.json()
     }).then(result => {
         console.log(result)
